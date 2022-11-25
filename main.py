@@ -1,10 +1,9 @@
 import sqlite3
 import sys
 
-from PyQt5 import uic, QtGui
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QInputDialog, QVBoxLayout
-from PyQt5.QtWidgets import QMainWindow, QLabel, QTableWidget, QTableWidgetItem
-from PyQt5.QtCore import Qt
+from PyQt5 import uic
+from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QMainWindow QTableWidgetItem
 
 
 class Main(QMainWindow):
