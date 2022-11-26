@@ -33,7 +33,8 @@ class Add_redact(QWidget):
                         sorts.name,
                         coffee.taste,
                         coffee.price,
-                        coffee.volume
+                        coffee.volume,
+                        coffee.ID
                         FROM coffee
                         LEFT JOIN roasting ON coffee.roasting = roasting.ID
                         LEFT JOIN sorts ON coffee.name = sorts.ID
@@ -42,6 +43,7 @@ class Add_redact(QWidget):
                     
                     res = self.connection.cursor().execute(self.query).fetchone()
                     
+                    self.id = res[4]
                     self.line_redname.setText(res[0])
                     self.plainText2.setPlainText(res[1])
                     self.line_redprice.setText(str(res[2]))
@@ -73,6 +75,50 @@ class Add_redact(QWidget):
         rost = self.comBox3.currentText()
         type = self.comboBox_2.currentText()
 
+        # Проверка имени
+        names = self.connection.cursor().execute("""SELECT name FROM sorts""").fetchall()
+        try:
+            int(''.join(''.join(''.join(''.join(name.split('.')).split(',')).split(';')).split(':')))
+            print('Введите строковое значение у имени')
+        except Exception:
+            # Проверка цены и объёма
+            try:
+                price = int(price)
+                volume = int(volume)
+            except ValueError:
+                print('Введено не целое число у цены или объёма')
+            else:
+                if price <= 0 or volume <= 0:
+                    print('Введено отрицательное число или ноль у цены или объёма')
+                else:
+                    if not text:
+                        print('Не введено описание вкуса')
+                    else:
+                        cur = self.connection.cursor()
+
+                        if name not in names:
+                            cur.execute("""INSERT INTO sorts(name)
+                                VALUES(?)""", (name,))
+                            
+                        name = cur.execute("""SELECT ID FROM sorts
+                        WHERE name = ?""", (name,)).fetchone()
+
+                        rost = cur.execute("""SELECT ID FROM roasting
+                        WHERE name = ?""", (rost,)).fetchone()
+
+                        type = cur.execute("""SELECT ID FROM types
+                        WHERE name = ?""", (type,)).fetchone()
+
+                        # Изменение coffee
+                        cur.execute("""UPDATE coffee
+                        SET name = ?, roasting = ?,
+                        type = ?, taste = ?, price = ?,
+                        volume = ?
+                        WHERE ID = ?""", (name[0], rost[0], type[0], text, price, volume, self.id))
+
+                        self.connection.commit()
+                        self.close()
+
 
 class Main(QMainWindow):
     def __init__(self):
@@ -83,6 +129,7 @@ class Main(QMainWindow):
     def initUI(self):
         self.connection = sqlite3.connect("coffee.sqlite")
         self.pushButton.clicked.connect(self.add)
+        self.btn_ref.clicked.connect(self.refresh_table)
         self.query = """SELECT
             sorts.name,
             roasting.name,
@@ -100,6 +147,10 @@ class Main(QMainWindow):
     def add(self):
         self.form = Add_redact(self)
         self.form.show()
+    
+    def refresh_table(self):
+        self.query = self.query
+        self.select_data()
     
     def select_data(self):
         res = self.connection.cursor().execute(self.query).fetchall()

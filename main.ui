@@ -46,6 +46,19 @@
      <string>Добавить/Изменить</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="btn_ref">
+    <property name="geometry">
+     <rect>
+      <x>660</x>
+      <y>520</y>
+      <width>121</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Обновить таблицу</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
