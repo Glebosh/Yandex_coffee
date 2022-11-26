@@ -66,7 +66,12 @@ class Add_redact(QWidget):
         pass
 
     def redact(self):
-        pass
+        name = self.line_redname.text()
+        price = self.line_redprice.text()
+        volume = self.line_redvolume.text()
+        text = self.plainText2.toPlainText()
+        rost = self.comBox3.currentText()
+        type = self.comboBox_2.currentText()
 
 
 class Main(QMainWindow):
