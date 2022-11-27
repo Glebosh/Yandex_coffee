@@ -5,15 +5,18 @@ from PyQt5 import uic
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem, QWidget
 
+import main_ui as form_1
+import addEditCoffeeForm_ui as form_2
+
 
 class Add_redact(QWidget):
     def __init__(self, *args):
         super().__init__()
-        uic.loadUi('addEditCoffeeForm.ui', self)
+        uic.loadUi('release\\UI\\addEditCoffeeForm.ui', self)
         self.initUI()
     
     def initUI(self):
-        self.connection = sqlite3.connect("coffee.sqlite")
+        self.connection = sqlite3.connect("release\\data\\coffee.sqlite")
 
         t = []
         for i in [i[0] for i in self.connection.cursor().execute("""SELECT name FROM roasting""").fetchall()]:
@@ -188,11 +191,11 @@ class Add_redact(QWidget):
 class Main(QMainWindow):
     def __init__(self):
         super().__init__()
-        uic.loadUi('main.ui', self)
+        uic.loadUi('release\\UI\\main.ui', self)
         self.initUI()
 
     def initUI(self):
-        self.connection = sqlite3.connect("coffee.sqlite")
+        self.connection = sqlite3.connect("release\\data\\coffee.sqlite")
         self.pushButton.clicked.connect(self.add)
         self.btn_ref.clicked.connect(self.refresh_table)
         self.query = """SELECT
