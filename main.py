@@ -15,6 +15,16 @@ class Add_redact(QWidget):
     def initUI(self):
         self.connection = sqlite3.connect("coffee.sqlite")
 
+        t = []
+        for i in [i[0] for i in self.connection.cursor().execute("""SELECT name FROM roasting""").fetchall()]:
+            t.append(i)
+        self.comBox1.addItems(t)
+
+        t = []
+        for i in [i[0] for i in self.connection.cursor().execute("""SELECT name FROM types""").fetchall()]:
+            t.append(i)
+        self.comBox2.addItems(t)
+
         self.btn_add.clicked.connect(self.adding)
         self.btn_red.clicked.connect(self.redact)
         self.pushButton_2.clicked.connect(self.choose)
@@ -65,7 +75,57 @@ class Add_redact(QWidget):
         #     print('Неизвестная ошибка')
 
     def adding(self):
-        pass
+        name = self.line_addname.text()
+        price = self.line_addprice.text()
+        volume = self.line_addvolume.text()
+        text = self.plainText1.toPlainText()
+        rost = self.comBox1.currentText()
+        type = self.comBox2.currentText()
+
+        # Проверка имени
+        names = self.connection.cursor().execute("""SELECT name FROM sorts""").fetchall()
+        try:
+            int(''.join(''.join(''.join(''.join(name.split('.')).split(',')).split(';')).split(':')))
+            print('Введите строковое значение у имени')
+        except Exception:
+            # Проверка цены и объёма
+            try:
+                price = int(price)
+                volume = int(volume)
+            except ValueError:
+                print('Введено не целое число у цены или объёма')
+            else:
+                if price <= 0 or volume <= 0:
+                    print('Введено отрицательное число или ноль у цены или объёма')
+                else:
+                    # Проверка вкуса
+                    if not text:
+                        print('Не введено описание вкуса')
+                    else:
+                        try:
+                            cur = self.connection.cursor()
+
+                            if name not in names:
+                                cur.execute("""INSERT INTO sorts(name)
+                                    VALUES(?)""", (name,))
+                                
+                            name = cur.execute("""SELECT ID FROM sorts
+                            WHERE name = ?""", (name,)).fetchone()
+
+                            rost = cur.execute("""SELECT ID FROM roasting
+                            WHERE name = ?""", (rost,)).fetchone()
+
+                            type = cur.execute("""SELECT ID FROM types
+                            WHERE name = ?""", (type,)).fetchone()
+                                
+                            cur.execute("""INSERT INTO coffee(name, roasting, type, taste, price, volume)
+                            VALUES(?, ?, ?, ?, ?, ?)""", (name[0], rost[0], type[0], text, price, volume))
+
+                            self.connection.commit()
+                            self.close()
+                        except Exception:
+                                print('Неизвестная ошибка')
+                                self.close
 
     def redact(self):
         name = self.line_redname.text()
@@ -91,33 +151,38 @@ class Add_redact(QWidget):
                 if price <= 0 or volume <= 0:
                     print('Введено отрицательное число или ноль у цены или объёма')
                 else:
+                    # Проверка вкуса
                     if not text:
                         print('Не введено описание вкуса')
                     else:
-                        cur = self.connection.cursor()
+                        try:
+                            cur = self.connection.cursor()
 
-                        if name not in names:
-                            cur.execute("""INSERT INTO sorts(name)
-                                VALUES(?)""", (name,))
-                            
-                        name = cur.execute("""SELECT ID FROM sorts
-                        WHERE name = ?""", (name,)).fetchone()
+                            if name not in names:
+                                cur.execute("""INSERT INTO sorts(name)
+                                    VALUES(?)""", (name,))
+                                
+                            name = cur.execute("""SELECT ID FROM sorts
+                            WHERE name = ?""", (name,)).fetchone()
 
-                        rost = cur.execute("""SELECT ID FROM roasting
-                        WHERE name = ?""", (rost,)).fetchone()
+                            rost = cur.execute("""SELECT ID FROM roasting
+                            WHERE name = ?""", (rost,)).fetchone()
 
-                        type = cur.execute("""SELECT ID FROM types
-                        WHERE name = ?""", (type,)).fetchone()
+                            type = cur.execute("""SELECT ID FROM types
+                            WHERE name = ?""", (type,)).fetchone()
 
-                        # Изменение coffee
-                        cur.execute("""UPDATE coffee
-                        SET name = ?, roasting = ?,
-                        type = ?, taste = ?, price = ?,
-                        volume = ?
-                        WHERE ID = ?""", (name[0], rost[0], type[0], text, price, volume, self.id))
+                            # Изменение coffee
+                            cur.execute("""UPDATE coffee
+                            SET name = ?, roasting = ?,
+                            type = ?, taste = ?, price = ?,
+                            volume = ?
+                            WHERE ID = ?""", (name[0], rost[0], type[0], text, price, volume, self.id))
 
-                        self.connection.commit()
-                        self.close()
+                            self.connection.commit()
+                            self.close()
+                        except Exception:
+                            print('Неизвестная ошибка')
+                            self.close
 
 
 class Main(QMainWindow):
